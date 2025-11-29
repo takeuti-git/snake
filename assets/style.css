@@ -1,0 +1,50 @@
+:root {
+    --tile-size: 35px
+}
+
+body {
+    height: 100vh;
+    min-height: max-content;
+    padding: 0;
+    margin: 0;
+
+    font-family: "system-ui";
+    user-select: none;
+    /* background-color: #eee; */
+    background-color: azure;
+    background: linear-gradient(180deg, white, azure);
+}
+
+.game-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.game-info {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 1.5rem;
+
+    margin-bottom: 10px;
+}
+
+.game-info .label {
+    font-weight: bold;
+}
+
+.controls,
+.options {
+    width: 100%;
+    max-width: 300px;
+    text-align: left;
+}
+
+#canvas {
+    border: 3px solid #666;
+    border-radius: 3px;
+
+    transition: border-color 0.5s;
+}
