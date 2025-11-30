@@ -5,8 +5,8 @@ import { generateGradient } from "../util/generate_gradient.js";
 import * as time from "../util/time.js";
 
 /**
- * @typedef {import("../constants/common-types.d").Coordinate} Coordinate
- * @typedef {import("../constants/common-types.d").Vector} Vector
+ * @typedef {import("../constants/common-types.d.js").Coordinate} Coordinate
+ * @typedef {import("../constants/common-types.d.js").Vector} Vector
  */
 
 const tileSize = 30;

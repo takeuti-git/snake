@@ -1,7 +1,7 @@
 // main.js
 "use strict";
-import { Game } from "./js/core/game.js";
-import { setupKeyEvents } from "./js/ui/event.js";
+import { Game } from "./core/game.js";
+import { setupKeyEvents } from "./ui/event.js";
 
 function main() {
     const option = sessionStorage.getItem("map_size");

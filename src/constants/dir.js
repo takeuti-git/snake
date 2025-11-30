@@ -1,4 +1,4 @@
-// import { deepFreeze } from "../util/deep_freeze.js";
+// @ts-check
 
 /**
  * @typedef {import("./common-types.d.js").Vector} Vector
