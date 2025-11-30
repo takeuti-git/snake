@@ -1,6 +1,7 @@
 // @ts-check
 // snake.js
 
+import { DIR } from "../constants/dir.js";
 import { END_REASONS } from "../constants/end_reason.js";
 import { isSameCoord } from "../util/coord.js";
 
@@ -50,7 +51,7 @@ export class Snake {
          * デフォルトは右
          * @type {Vector}
          */
-        this.direction = { vx: 1, vy: 0 };
+        this.direction = DIR.RIGHT;
 
         /**
          * directionを決定するための一時的なオブジェクト
@@ -73,8 +74,6 @@ export class Snake {
 
         const last = this.nextDirectionQueue[this.nextDirectionQueue.length - 1];
         if (last && last.vx === vx && last.vy === vy) return; // 最後と同じ入力は無し
-
-        if (this.direction.vx === vx && this.direction.vy === vy) return; // 現在の方向と同じなら無視
 
         const entry = { vx, vy };
         this.nextDirectionQueue.push(entry);
