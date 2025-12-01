@@ -64,9 +64,9 @@ export class Snake {
 
         this.growFlag = false;
 
-        this.doStepOver = false;
+        this.willStepOver = false;
     }
-    
+
     isMapFull() {
         return this.body.length === this.mapArea;
     }
@@ -106,17 +106,45 @@ export class Snake {
 
     /** 
      * 新しい頭を配列の先頭に追加
-     * @param {Coordinate} newHead 
+     * @param {Coordinate} nextHead 
      * */
-    forward(newHead) {
-        this.body.unshift(newHead);
-    }
+    move(nextHead) { this.body.unshift(nextHead); }
 
     grow() { this.growFlag = true; }
     shrink() { this.body.pop(); }
+    stepOver() { this.willStepOver = true; }
 
-    stepOver() {
-        this.doStepOver = true;
+    computeNextHead() {
+        const head = this.body[0];
+        const dir = structuredClone(this.direction);
+
+        if (this.willStepOver) {
+            this.willStepOver = false;
+            dir.vx *= 2;
+            dir.vy *= 2;
+        }
+
+        return { x: head.x + dir.vx, y: head.y + dir.vy };
+    }
+
+    hitwall(/** @type {Coordinate} */ nextHead) {
+        return (
+            nextHead.x < 0 || nextHead.x >= this.mapSize.width ||
+            nextHead.y < 0 || nextHead.y >= this.mapSize.height
+        );
+    }
+
+    hitSelf(/** @type {Coordinate} */ nextHead) {
+        const bodyExceptTail = this.body.slice(0, -1);
+        return bodyExceptTail.some(seg => isSameCoord(seg, nextHead));
+    }
+
+    willCrash(/** @type {Coordinate} */ nextHead) {
+        return this.hitwall(nextHead) || this.hitSelf(nextHead);
+    }
+
+    willEat(/** @type {Coordinate} */ nextHead) {
+        return this.food.some(seg => isSameCoord(seg, nextHead));
     }
 
     /**
@@ -127,56 +155,30 @@ export class Snake {
             this.setDirection();
         }
 
-        if (this.doStepOver) {
-            this.direction.vx *= 2;
-            this.direction.vy *= 2;
-        }
-
-        // ヘビの頭を取得。
-        const head = this.body[0];
-
-        // 新しい頭の位置を計算。今の頭の位置にベクトルを足した座標が次の位置になる。
         /** @type {Coordinate} */
-        const newHead = {
-            x: head.x + this.direction.vx,
-            y: head.y + this.direction.vy,
-        };
+        const nextHead = this.computeNextHead();
 
-        if (this.doStepOver) {
-            this.doStepOver = false;
-            this.direction.vx /= 2;
-            this.direction.vy /= 2;
-        }
-
-        // 衝突判定は移動してから（newHeadが生まれてから）
-        const hitWall =
-            newHead.x < 0 || newHead.x >= this.mapSize.width ||
-            newHead.y < 0 || newHead.y >= this.mapSize.height;
-        if (hitWall) {
-            return END_REASONS.CRASH;
-        }
-
-        const bodyExceptTail = this.body.slice(0, -1);
-        const hitSelf = bodyExceptTail.some(seg => isSameCoord(seg, newHead));
-        if (hitSelf) {
+        if (this.willCrash(nextHead)) {
             return END_REASONS.CRASH;
         }
 
         // 前進
-        this.forward(newHead);
+        this.move(nextHead);
 
         // 食べ物を判定
-        const ateFood = this.food.some(seg => isSameCoord(seg, newHead));
-        if (this.growFlag || ateFood) {
+        const eating = this.willEat(nextHead);
+
+        if (this.growFlag || eating) {
             // do nothing
+            // growメソッドにより成長するのではなく、shrinkをするかしないか
         } else {
             this.shrink();
         }
         this.growFlag = false;
 
         // 食べ物が食べられた時だけ新しく生成。
-        if (ateFood) {
-            this.spawnFood(newHead);
+        if (eating) {
+            this.spawnFood(nextHead);
         }
 
         // bodyセグメントの数がマップのタイルと等しいとき、ゲームを終了する
@@ -195,8 +197,6 @@ export class Snake {
         this.food = this.food.filter(seg => !isSameCoord(seg, head));
 
         const { width, height } = this.mapSize;
-        const body = this.body;
-        const food = this.food;
 
         /** @type {Coordinate[]} */
         let emptyCells = [];
@@ -206,8 +206,8 @@ export class Snake {
                 // bodyと被らない座標を取得
                 const xy = { x, y };
                 const occupied =
-                    body.some(seg => isSameCoord(seg, xy)) ||
-                    food.some(seg => isSameCoord(seg, xy));
+                    this.body.some(seg => isSameCoord(seg, xy)) ||
+                    this.food.some(seg => isSameCoord(seg, xy));
                 if (!occupied) emptyCells.push(xy);
             }
         }
@@ -229,7 +229,7 @@ export class Snake {
         // 食べられたら必ず1個追加
         addFood();
 
-        // // 追加ボーナス 確率で食べ物の数が増加する
+        // // 追加ボーナス 確率で食べ物の総数が増加する
         // const p = 1 + this.food.length;
         // const rng = Math.floor(Math.random() * p);
         // if (rng === 0) {
